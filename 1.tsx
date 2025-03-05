@@ -1,24 +1,23 @@
 "use client";
 
-import { 
-  TrendingUp, Expand, Shrink, RotateCcw, 
-  LineChart as LineIcon, BarChart as BarIcon, ArrowsUpDown 
-} from "lucide-react"; 
-
+import { TrendingUp, Expand, Shrink, RotateCcw, LineChart as LineIcon, BarChart as BarIcon } from "lucide-react"; 
 import { useState, useRef } from "react";
-import { 
-  Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Brush, 
-  Line, LineChart 
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Brush, Line, LineChart } from "recharts";
 import screenfull from "screenfull";
 import { Button } from "@/components/UI/button";
 import {
-  Card, CardContent, CardDescription, CardFooter, 
-  CardHeader, CardTitle 
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/UI/card";
-
 import {
-  ChartConfig, ChartContainer, ChartLegendContent, ChartTooltipContent
+  ChartConfig,
+  ChartContainer,
+  ChartLegendContent,
+  ChartTooltipContent,
 } from "@/components/UI/chart";
 
 export const description = "A stacked bar & line chart with a legend";
@@ -42,7 +41,7 @@ export function ChartFrame({ title, description, data, config }: ChartProps) {
 
   // Reset Chart to Horizontal & Reset Brush Range
   const resetChart = () => {
-    setIsVertical(false);
+    setIsVertical(false); 
     setIsLineChart(false);
     setBrushStartIndex(0);
     setBrushEndIndex(data.length - 1);
@@ -70,20 +69,28 @@ export function ChartFrame({ title, description, data, config }: ChartProps) {
 
           {/* Buttons Section */}
           <div className="flex gap-2">
-            {/* Toggle Chart Type (Icon Switches) */}
-            <Button 
-              onClick={() => setIsLineChart((prev) => !prev)}
-              className="flex items-center gap-1"
+            <Button
+              onClick={() => setIsLineChart(false)}
+              className={`flex items-center gap-1 ${
+                !isLineChart ? "bg-gray-300" : "bg-gray-100"
+              }`}
             >
-              {isLineChart ? <BarIcon className="h-5 w-5" /> : <LineIcon className="h-5 w-5" />}
+              <BarIcon className="h-5 w-5" /> Bar Chart
             </Button>
 
-            {/* Fullscreen Button */}
+            <Button
+              onClick={() => setIsLineChart(true)}
+              className={`flex items-center gap-1 ${
+                isLineChart ? "bg-gray-300" : "bg-gray-100"
+              }`}
+            >
+              <LineIcon className="h-5 w-5" /> Line Chart
+            </Button>
+
             <Button onClick={ToggleFullScreen} className="flex items-center gap-1">
               {isFullScreen ? <Shrink className="h-5 w-5" /> : <Expand className="h-5 w-5" />}
             </Button>
 
-            {/* Reset Button */}
             <Button onClick={resetChart} className="bg-red-500 text-white flex items-center gap-1">
               <RotateCcw className="h-5 w-5" /> Reset
             </Button>
@@ -92,35 +99,15 @@ export function ChartFrame({ title, description, data, config }: ChartProps) {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
 
-      {/* Toggle Horizontal/Vertical */}
-      <Button 
-        onClick={() => setIsVertical((prev) => !prev)}
-        className="mb-4 transition-all duration-300 ease-in-out bg-gray-100 text-black"
-      >
-        <ArrowsUpDown className="h-5 w-5" /> Switch to {isVertical ? "Horizontal" : "Vertical"}
-      </Button>
-
       {/* Chart Content */}
       <CardContent>
         <ChartContainer config={config}>
           {isLineChart ? (
-            // Line Chart (Horizontal / Vertical)
-            <LineChart 
-              layout={isVertical ? "vertical" : "horizontal"} 
-              width={500} height={400} data={data}
-            >
+            // Line Chart
+            <LineChart width={500} height={400} data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              {isVertical ? (
-                <>
-                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                  <XAxis type="number" domain={[0, "dataMax"]} />
-                </>
-              ) : (
-                <>
-                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                  <YAxis type="number" domain={[0, "dataMax"]} />
-                </>
-              )}
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <YAxis domain={[0, "dataMax"]} />
               <Tooltip content={<ChartTooltipContent hideLabel />} />
               <Legend content={<ChartLegendContent />} />
               <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={2} />
@@ -138,8 +125,9 @@ export function ChartFrame({ title, description, data, config }: ChartProps) {
               />
             </LineChart>
           ) : (
-            // Bar Chart (Vertical / Horizontal)
+            // Bar Chart (Vertical or Horizontal)
             <BarChart
+              key={isVertical ? "vertical" : "horizontal"}
               layout={isVertical ? "vertical" : "horizontal"}
               width={500}
               height={400}
