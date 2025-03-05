@@ -30,17 +30,18 @@ export function BarChartFrame({ title, description, data, config }: {
 }) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [chartType, setChartType] = useState<"bar" | "line">("bar");
-  const [isVertical, setIsVertical] = useState(false);
+  const [layout, setLayout] = useState<"horizontal" | "vertical">("horizontal");
+  const [chartKey, setChartKey] = useState(0); // Used for re-rendering
   const chartRef = useRef<HTMLDivElement>(null);
 
-  // Store brush range
   const [brushStartIndex, setBrushStartIndex] = useState(0);
   const [brushEndIndex, setBrushEndIndex] = useState(data.length - 1);
 
   // Reset Chart
   const resetChart = () => {
     setChartType("bar");
-    setIsVertical(false);
+    setLayout("horizontal");
+    setChartKey((prev) => prev + 1); // Forces re-render
     setBrushStartIndex(0);
     setBrushEndIndex(data.length - 1);
   };
@@ -68,13 +69,13 @@ export function BarChartFrame({ title, description, data, config }: {
           {/* Buttons */}
           <div className="flex gap-2">
             {/* Chart Type Switch */}
-            <Button onClick={() => setChartType(chartType === "bar" ? "line" : "bar")} className="flex items-center gap-1">
+            <Button onClick={() => { setChartType(chartType === "bar" ? "line" : "bar"); setChartKey((prev) => prev + 1); }} className="flex items-center gap-1">
               {chartType === "bar" ? <LineIcon className="h-5 w-5" /> : <BarIcon className="h-5 w-5" />}
             </Button>
 
             {/* Orientation Switch */}
-            <Button onClick={() => setIsVertical(!isVertical)} className="flex items-center gap-1">
-              {isVertical ? <ArrowsLeftRight className="h-5 w-5" /> : <ArrowsUpDown className="h-5 w-5" />}
+            <Button onClick={() => { setLayout(layout === "horizontal" ? "vertical" : "horizontal"); setChartKey((prev) => prev + 1); }} className="flex items-center gap-1">
+              {layout === "horizontal" ? <ArrowsLeftRight className="h-5 w-5" /> : <ArrowsUpDown className="h-5 w-5" />}
             </Button>
 
             {/* Fullscreen Toggle */}
@@ -92,24 +93,36 @@ export function BarChartFrame({ title, description, data, config }: {
       </CardHeader>
 
       {/* Chart Content */}
-      <CardContent className="w-full flex justify-center">
-        <ChartContainer config={config}>
+      <CardContent className="w-full flex justify-center min-h-[400px]">
+        <ChartContainer config={config} className="w-full h-[400px]">
           {chartType === "bar" ? (
-            // Bar Chart (Horizontal/Vertical)
             <BarChart 
-              layout={isVertical ? "vertical" : "horizontal"} 
+              key={chartKey} // Forces re-render
+              layout={layout} 
               width={600} height={400} data={data}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              {isVertical ? (
+              {layout === "vertical" ? (
                 <>
-                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                  <XAxis type="number" domain={[0, "dataMax"]} />
+                  <YAxis 
+                    dataKey="month" type="category" 
+                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
+                  />
+                  <XAxis 
+                    type="number" domain={[0, "dataMax"]} 
+                    axisLine={true} tickLine={true} 
+                  />
                 </>
               ) : (
                 <>
-                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                  <YAxis type="number" domain={[0, "dataMax"]} />
+                  <XAxis 
+                    dataKey="month" type="category" 
+                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
+                  />
+                  <YAxis 
+                    type="number" domain={[0, "dataMax"]} 
+                    axisLine={true} tickLine={true} 
+                  />
                 </>
               )}
               <Tooltip content={<ChartTooltipContent hideLabel />} />
@@ -122,59 +135,47 @@ export function BarChartFrame({ title, description, data, config }: {
                 stroke="gray"
                 startIndex={brushStartIndex}
                 endIndex={brushEndIndex}
-                onChange={(range) => {
-                  setBrushStartIndex(range.startIndex ?? 0);
-                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
-                }}
               />
             </BarChart>
           ) : (
-            // Line Chart (Horizontal/Vertical)
             <LineChart 
-              layout={isVertical ? "vertical" : "horizontal"} 
+              key={chartKey} // Forces re-render
+              layout={layout} 
               width={600} height={400} data={data}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              {isVertical ? (
+              {layout === "vertical" ? (
                 <>
-                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                  <XAxis type="number" domain={[0, "dataMax"]} />
+                  <YAxis 
+                    dataKey="month" type="category" 
+                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
+                  />
+                  <XAxis 
+                    type="number" domain={[0, "dataMax"]} 
+                    axisLine={true} tickLine={true} 
+                  />
                 </>
               ) : (
                 <>
-                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                  <YAxis type="number" domain={[0, "dataMax"]} />
+                  <XAxis 
+                    dataKey="month" type="category" 
+                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
+                  />
+                  <YAxis 
+                    type="number" domain={[0, "dataMax"]} 
+                    axisLine={true} tickLine={true} 
+                  />
                 </>
               )}
               <Tooltip content={<ChartTooltipContent hideLabel />} />
               <Legend content={<ChartLegendContent />} />
               <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={2} />
               <Line type="monotone" dataKey="mobile" stroke={config.mobile.color} strokeWidth={2} />
-              <Brush
-                dataKey="month"
-                height={20}
-                stroke="gray"
-                startIndex={brushStartIndex}
-                endIndex={brushEndIndex}
-                onChange={(range) => {
-                  setBrushStartIndex(range.startIndex ?? 0);
-                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
-                }}
-              />
+              <Brush dataKey="month" height={20} stroke="gray" />
             </LineChart>
           )}
         </ChartContainer>
       </CardContent>
-
-      {/* Footer */}
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   );
 }
