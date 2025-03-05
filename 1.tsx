@@ -1,29 +1,27 @@
 "use client";
 
-import { TrendingUp, Expand, Shrink, LineChart as LineIcon, BarChart as BarIcon, RotateCw } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import screenfull from "screenfull";
 import { 
-  Bar, Line, LineChart, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer 
-} from "recharts";
+  TrendingUp, Expand, Shrink, RotateCcw, 
+  LineChart as LineIcon, BarChart as BarIcon, ArrowsUpDown 
+} from "lucide-react"; 
 
+import { useState, useRef } from "react";
+import { 
+  Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Brush, 
+  Line, LineChart 
+} from "recharts";
+import screenfull from "screenfull";
 import { Button } from "@/components/UI/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardDescription, CardFooter, 
+  CardHeader, CardTitle 
 } from "@/components/UI/card";
+
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegendContent,
-  ChartTooltipContent,
+  ChartConfig, ChartContainer, ChartLegendContent, ChartTooltipContent
 } from "@/components/UI/chart";
 
-export const description = "A stacked bar and line chart with fullscreen options.";
+export const description = "A stacked bar & line chart with a legend";
 
 interface ChartProps {
   title: string;
@@ -33,126 +31,53 @@ interface ChartProps {
 }
 
 export function ChartFrame({ title, description, data, config }: ChartProps) {
-  const [chartType, setChartType] = useState<"bar-horizontal" | "bar-vertical" | "line">("bar-horizontal");
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isVertical, setIsVertical] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isLineChart, setIsLineChart] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
-  const [chartSize, setChartSize] = useState({ width: 600, height: 400 });
 
-  // Fullscreen Toggle
-  const toggleFullscreen = () => {
+  // Store brush range
+  const [brushStartIndex, setBrushStartIndex] = useState(0);
+  const [brushEndIndex, setBrushEndIndex] = useState(data.length - 1);
+
+  // Reset Chart to Horizontal & Reset Brush Range
+  const resetChart = () => {
+    setIsVertical(false);
+    setIsLineChart(false);
+    setBrushStartIndex(0);
+    setBrushEndIndex(data.length - 1);
+  };
+
+  const ToggleFullScreen = () => {
     if (screenfull.isEnabled && chartRef.current) {
       screenfull.toggle(chartRef.current);
-      setIsFullscreen((prev) => !prev);
+      setIsFullScreen((prev) => !prev);
     }
   };
 
-  // Adjust chart size when fullscreen mode changes
-  useEffect(() => {
-    const updateSize = () => {
-      if (isFullscreen) {
-        setChartSize({ width: window.innerWidth - 40, height: window.innerHeight - 100 });
-      } else {
-        setChartSize({ width: 600, height: 400 });
-      }
-    };
-
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, [isFullscreen]);
-
   return (
-    <Card ref={chartRef} className={`relative w-full items-center justify-center ${isFullscreen ? "fixed top-0 left-0 w-screen h-screen bg-white p-4" : ""}`}>
-      {/* Title and Buttons in Same Row */}
+    <Card
+      ref={chartRef}
+      className={`w-full hover:shadow-lg overflow-hidden p-6 flex flex-col items-center justify-center ${
+        isFullScreen ? "fixed top-0 left-0 w-screen h-screen bg-white" : ""
+      }`}
+    >
+      {/* Header with Title on Left, Buttons on Right */}
       <CardHeader>
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
+        <div className="flex items-center w-full justify-between">
+          {/* Chart Title */}
+          <CardTitle>{title}</CardTitle>
+
+          {/* Buttons Section */}
           <div className="flex gap-2">
-            {/* Toggle Between Bar Horizontal, Bar Vertical, and Line Chart */}
-            <Button
-              onClick={() => setChartType("bar-horizontal")}
-              className={`p-2 rounded-full ${chartType === "bar-horizontal" ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
+            {/* Toggle Chart Type (Icon Switches) */}
+            <Button 
+              onClick={() => setIsLineChart((prev) => !prev)}
+              className="flex items-center gap-1"
             >
-              <BarIcon className="h-5 w-5" /> H
-            </Button>
-            <Button
-              onClick={() => setChartType("bar-vertical")}
-              className={`p-2 rounded-full ${chartType === "bar-vertical" ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
-            >
-              <BarIcon className="h-5 w-5 rotate-90" /> V
-            </Button>
-            <Button
-              onClick={() => setChartType("line")}
-              className={`p-2 rounded-full ${chartType === "line" ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
-            >
-              <LineIcon className="h-5 w-5" />
+              {isLineChart ? <BarIcon className="h-5 w-5" /> : <LineIcon className="h-5 w-5" />}
             </Button>
 
-            {/* Fullscreen Toggle */}
-            <Button
-              onClick={toggleFullscreen}
-              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
-            >
-              {isFullscreen ? <Shrink className="h-5 w-5" /> : <Expand className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      {/* Chart Content */}
-      <CardContent>
-        <ChartContainer config={config}>
-          <ResponsiveContainer width={chartSize.width} height={chartSize.height}>
-            {chartType === "line" ? (
-              /* LINE CHART */
-              <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" tick={{ fontSize: 14 }} />
-                <YAxis domain={[0, "dataMax"]} />
-                <Tooltip content={<ChartTooltipContent hideLabel />} />
-                <Legend content={<ChartLegendContent />} />
-                <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={3} dot={false} />
-                <Line type="monotone" dataKey="mobile" stroke={config.mobile.color} strokeWidth={3} dot={false} />
-              </LineChart>
-            ) : chartType === "bar-horizontal" ? (
-              /* HORIZONTAL BAR CHART */
-              <BarChart layout="horizontal" data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" type="category" tick={{ fontSize: 14 }} />
-                <YAxis type="number" domain={[0, "dataMax"]} />
-                <Tooltip content={<ChartTooltipContent hideLabel />} />
-                <Legend content={<ChartLegendContent />} />
-                <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
-                <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
-              </BarChart>
-            ) : (
-              /* VERTICAL BAR CHART */
-              <BarChart layout="vertical" data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <YAxis dataKey="month" type="category" tick={{ fontSize: 14 }} />
-                <XAxis type="number" domain={[0, "dataMax"]} />
-                <Tooltip content={<ChartTooltipContent hideLabel />} />
-                <Legend content={<ChartLegendContent />} />
-                <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
-                <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
-              </BarChart>
-            )}
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
-
-      {/* Footer */}
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
-    </Card>
-  );
-}
+            {/* Fullscreen Button */}
+            <Button onClick={ToggleFullScreen} className="flex items-center gap-1">
+              {isFullScreen ? <Sh
