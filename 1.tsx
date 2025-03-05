@@ -3,7 +3,7 @@
 import { 
   TrendingUp, Expand, Shrink, RotateCcw, 
   LineChart as LineIcon, BarChart as BarIcon, 
-  ArrowsUpDown, ArrowsLeftRight
+  ArrowUpDown, ArrowLeftRight
 } from "lucide-react"; 
 
 import { useState, useRef } from "react";
@@ -34,18 +34,6 @@ export function BarChartFrame({ title, description, data, config }: {
   const [chartKey, setChartKey] = useState(0); // Used for re-rendering
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const [brushStartIndex, setBrushStartIndex] = useState(0);
-  const [brushEndIndex, setBrushEndIndex] = useState(data.length - 1);
-
-  // Reset Chart
-  const resetChart = () => {
-    setChartType("bar");
-    setLayout("horizontal");
-    setChartKey((prev) => prev + 1); // Forces re-render
-    setBrushStartIndex(0);
-    setBrushEndIndex(data.length - 1);
-  };
-
   const ToggleFullScreen = () => {
     if (screenfull.isEnabled && chartRef.current) {
       screenfull.toggle(chartRef.current);
@@ -75,7 +63,7 @@ export function BarChartFrame({ title, description, data, config }: {
 
             {/* Orientation Switch */}
             <Button onClick={() => { setLayout(layout === "horizontal" ? "vertical" : "horizontal"); setChartKey((prev) => prev + 1); }} className="flex items-center gap-1">
-              {layout === "horizontal" ? <ArrowsLeftRight className="h-5 w-5" /> : <ArrowsUpDown className="h-5 w-5" />}
+              {layout === "horizontal" ? <ArrowLeftRight className="h-5 w-5" /> : <ArrowUpDown className="h-5 w-5" />}
             </Button>
 
             {/* Fullscreen Toggle */}
@@ -84,7 +72,7 @@ export function BarChartFrame({ title, description, data, config }: {
             </Button>
 
             {/* Reset Button */}
-            <Button onClick={resetChart} className="bg-red-500 text-white flex items-center gap-1">
+            <Button onClick={() => { setChartType("bar"); setLayout("horizontal"); setChartKey((prev) => prev + 1); }} className="bg-red-500 text-white flex items-center gap-1">
               <RotateCcw className="h-5 w-5" /> Reset
             </Button>
           </div>
@@ -104,38 +92,20 @@ export function BarChartFrame({ title, description, data, config }: {
               <CartesianGrid strokeDasharray="3 3" />
               {layout === "vertical" ? (
                 <>
-                  <YAxis 
-                    dataKey="month" type="category" 
-                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
-                  />
-                  <XAxis 
-                    type="number" domain={[0, "dataMax"]} 
-                    axisLine={true} tickLine={true} 
-                  />
+                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} axisLine tickLine />
+                  <XAxis type="number" domain={[0, "dataMax"]} axisLine tickLine />
                 </>
               ) : (
                 <>
-                  <XAxis 
-                    dataKey="month" type="category" 
-                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
-                  />
-                  <YAxis 
-                    type="number" domain={[0, "dataMax"]} 
-                    axisLine={true} tickLine={true} 
-                  />
+                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} axisLine tickLine />
+                  <YAxis type="number" domain={[0, "dataMax"]} axisLine tickLine />
                 </>
               )}
               <Tooltip content={<ChartTooltipContent hideLabel />} />
               <Legend content={<ChartLegendContent />} />
               <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
               <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
-              <Brush
-                dataKey="month"
-                height={20}
-                stroke="gray"
-                startIndex={brushStartIndex}
-                endIndex={brushEndIndex}
-              />
+              <Brush dataKey="month" height={20} stroke="gray" />
             </BarChart>
           ) : (
             <LineChart 
@@ -146,25 +116,13 @@ export function BarChartFrame({ title, description, data, config }: {
               <CartesianGrid strokeDasharray="3 3" />
               {layout === "vertical" ? (
                 <>
-                  <YAxis 
-                    dataKey="month" type="category" 
-                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
-                  />
-                  <XAxis 
-                    type="number" domain={[0, "dataMax"]} 
-                    axisLine={true} tickLine={true} 
-                  />
+                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} axisLine tickLine />
+                  <XAxis type="number" domain={[0, "dataMax"]} axisLine tickLine />
                 </>
               ) : (
                 <>
-                  <XAxis 
-                    dataKey="month" type="category" 
-                    tick={{ fontSize: 12 }} axisLine={true} tickLine={true} 
-                  />
-                  <YAxis 
-                    type="number" domain={[0, "dataMax"]} 
-                    axisLine={true} tickLine={true} 
-                  />
+                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} axisLine tickLine />
+                  <YAxis type="number" domain={[0, "dataMax"]} axisLine tickLine />
                 </>
               )}
               <Tooltip content={<ChartTooltipContent hideLabel />} />
