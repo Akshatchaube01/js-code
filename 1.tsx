@@ -19,7 +19,7 @@ import {
 } from "@/components/UI/card";
 
 import {
-  ChartConfig, ChartLegendContent, ChartTooltipContent
+  ChartContainer, ChartConfig, ChartLegendContent, ChartTooltipContent
 } from "@/components/UI/chart";
 
 export function BarChartFrame({ title, description, data, config }: { 
@@ -93,75 +93,77 @@ export function BarChartFrame({ title, description, data, config }: {
 
       {/* Chart Content */}
       <CardContent className="w-full flex justify-center">
-        {chartType === "bar" ? (
-          // Bar Chart (Horizontal/Vertical)
-          <BarChart 
-            layout={isVertical ? "vertical" : "horizontal"} 
-            width={600} height={400} data={data}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            {isVertical ? (
-              <>
-                <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                <XAxis type="number" domain={[0, "dataMax"]} />
-              </>
-            ) : (
-              <>
-                <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                <YAxis type="number" domain={[0, "dataMax"]} />
-              </>
-            )}
-            <Tooltip content={<ChartTooltipContent hideLabel />} />
-            <Legend content={<ChartLegendContent />} />
-            <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
-            <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
-            <Brush
-              dataKey="month"
-              height={20}
-              stroke="gray"
-              startIndex={brushStartIndex}
-              endIndex={brushEndIndex}
-              onChange={(range) => {
-                setBrushStartIndex(range.startIndex ?? 0);
-                setBrushEndIndex(range.endIndex ?? (data.length - 1));
-              }}
-            />
-          </BarChart>
-        ) : (
-          // Line Chart (Horizontal/Vertical)
-          <LineChart 
-            layout={isVertical ? "vertical" : "horizontal"} 
-            width={600} height={400} data={data}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            {isVertical ? (
-              <>
-                <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                <XAxis type="number" domain={[0, "dataMax"]} />
-              </>
-            ) : (
-              <>
-                <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                <YAxis type="number" domain={[0, "dataMax"]} />
-              </>
-            )}
-            <Tooltip content={<ChartTooltipContent hideLabel />} />
-            <Legend content={<ChartLegendContent />} />
-            <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={2} />
-            <Line type="monotone" dataKey="mobile" stroke={config.mobile.color} strokeWidth={2} />
-            <Brush
-              dataKey="month"
-              height={20}
-              stroke="gray"
-              startIndex={brushStartIndex}
-              endIndex={brushEndIndex}
-              onChange={(range) => {
-                setBrushStartIndex(range.startIndex ?? 0);
-                setBrushEndIndex(range.endIndex ?? (data.length - 1));
-              }}
-            />
-          </LineChart>
-        )}
+        <ChartContainer config={config}>
+          {chartType === "bar" ? (
+            // Bar Chart (Horizontal/Vertical)
+            <BarChart 
+              layout={isVertical ? "vertical" : "horizontal"} 
+              width={600} height={400} data={data}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              {isVertical ? (
+                <>
+                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <XAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              ) : (
+                <>
+                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <YAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              )}
+              <Tooltip content={<ChartTooltipContent hideLabel />} />
+              <Legend content={<ChartLegendContent />} />
+              <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
+              <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
+              <Brush
+                dataKey="month"
+                height={20}
+                stroke="gray"
+                startIndex={brushStartIndex}
+                endIndex={brushEndIndex}
+                onChange={(range) => {
+                  setBrushStartIndex(range.startIndex ?? 0);
+                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
+                }}
+              />
+            </BarChart>
+          ) : (
+            // Line Chart (Horizontal/Vertical)
+            <LineChart 
+              layout={isVertical ? "vertical" : "horizontal"} 
+              width={600} height={400} data={data}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              {isVertical ? (
+                <>
+                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <XAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              ) : (
+                <>
+                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <YAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              )}
+              <Tooltip content={<ChartTooltipContent hideLabel />} />
+              <Legend content={<ChartLegendContent />} />
+              <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={2} />
+              <Line type="monotone" dataKey="mobile" stroke={config.mobile.color} strokeWidth={2} />
+              <Brush
+                dataKey="month"
+                height={20}
+                stroke="gray"
+                startIndex={brushStartIndex}
+                endIndex={brushEndIndex}
+                onChange={(range) => {
+                  setBrushStartIndex(range.startIndex ?? 0);
+                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
+                }}
+              />
+            </LineChart>
+          )}
+        </ChartContainer>
       </CardContent>
 
       {/* Footer */}
