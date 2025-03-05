@@ -18,7 +18,7 @@ import {
 } from "@/components/UI/card";
 
 import {
-  ChartConfig, ChartContainer, ChartLegendContent, ChartTooltipContent
+  ChartConfig, ChartLegendContent, ChartTooltipContent
 } from "@/components/UI/chart";
 
 export function ChartFrame({ title, description, data, config }: { 
@@ -29,7 +29,6 @@ export function ChartFrame({ title, description, data, config }: {
 }) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isLineChart, setIsLineChart] = useState(false);
-  const [chartKey, setChartKey] = useState(0); // Force re-render on toggle
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Store brush range
@@ -41,13 +40,6 @@ export function ChartFrame({ title, description, data, config }: {
     setIsLineChart(false);
     setBrushStartIndex(0);
     setBrushEndIndex(data.length - 1);
-    setChartKey((prev) => prev + 1); // Force re-render
-  };
-
-  // Toggle between Bar and Line Chart
-  const toggleChartType = () => {
-    setIsLineChart((prev) => !prev);
-    setChartKey((prev) => prev + 1);
   };
 
   const ToggleFullScreen = () => {
@@ -72,7 +64,7 @@ export function ChartFrame({ title, description, data, config }: {
 
           {/* Buttons */}
           <div className="flex gap-2">
-            <Button onClick={toggleChartType} className="flex items-center gap-1">
+            <Button onClick={() => setIsLineChart(!isLineChart)} className="flex items-center gap-1">
               {isLineChart ? <BarIcon className="h-5 w-5" /> : <LineIcon className="h-5 w-5" />}
             </Button>
             <Button onClick={ToggleFullScreen} className="flex items-center gap-1">
@@ -87,62 +79,52 @@ export function ChartFrame({ title, description, data, config }: {
       </CardHeader>
 
       {/* Chart Content */}
-      <CardContent>
-        <ChartContainer config={config}>
-          {isLineChart ? (
-            // Line Chart (Re-render when toggled)
-            <LineChart 
-              key={chartKey} // Forces re-render
-              width={500} height={400} data={data}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-              <YAxis type="number" domain={[0, "dataMax"]} />
-              <Tooltip content={<ChartTooltipContent hideLabel />} />
-              <Legend content={<ChartLegendContent />} />
-              <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={2} />
-              <Line type="monotone" dataKey="mobile" stroke={config.mobile.color} strokeWidth={2} />
-              <Brush
-                dataKey="month"
-                height={20}
-                stroke="gray"
-                startIndex={brushStartIndex}
-                endIndex={brushEndIndex}
-                onChange={(range) => {
-                  setBrushStartIndex(range.startIndex ?? 0);
-                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
-                }}
-              />
-            </LineChart>
-          ) : (
-            // Bar Chart (Re-render when toggled)
-            <BarChart
-              key={chartKey} // Forces re-render
-              width={500}
-              height={400}
-              data={data}
-            >
-              <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-              <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-              <YAxis type="number" domain={[0, "dataMax"]} />
-              <Tooltip content={<ChartTooltipContent hideLabel />} />
-              <Legend content={<ChartLegendContent />} />
-              <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
-              <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
-              <Brush
-                dataKey="month"
-                height={20}
-                stroke="gray"
-                startIndex={brushStartIndex}
-                endIndex={brushEndIndex}
-                onChange={(range) => {
-                  setBrushStartIndex(range.startIndex ?? 0);
-                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
-                }}
-              />
-            </BarChart>
-          )}
-        </ChartContainer>
+      <CardContent className="w-full flex justify-center">
+        {isLineChart ? (
+          // Line Chart
+          <LineChart width={600} height={400} data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, "dataMax"]} />
+            <Tooltip content={<ChartTooltipContent hideLabel />} />
+            <Legend content={<ChartLegendContent />} />
+            <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={2} />
+            <Line type="monotone" dataKey="mobile" stroke={config.mobile.color} strokeWidth={2} />
+            <Brush
+              dataKey="month"
+              height={20}
+              stroke="gray"
+              startIndex={brushStartIndex}
+              endIndex={brushEndIndex}
+              onChange={(range) => {
+                setBrushStartIndex(range.startIndex ?? 0);
+                setBrushEndIndex(range.endIndex ?? (data.length - 1));
+              }}
+            />
+          </LineChart>
+        ) : (
+          // Bar Chart
+          <BarChart width={600} height={400} data={data}>
+            <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, "dataMax"]} />
+            <Tooltip content={<ChartTooltipContent hideLabel />} />
+            <Legend content={<ChartLegendContent />} />
+            <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
+            <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
+            <Brush
+              dataKey="month"
+              height={20}
+              stroke="gray"
+              startIndex={brushStartIndex}
+              endIndex={brushEndIndex}
+              onChange={(range) => {
+                setBrushStartIndex(range.startIndex ?? 0);
+                setBrushEndIndex(range.endIndex ?? (data.length - 1));
+              }}
+            />
+          </BarChart>
+        )}
       </CardContent>
 
       {/* Footer */}
