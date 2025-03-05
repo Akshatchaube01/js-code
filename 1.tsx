@@ -80,4 +80,112 @@ export function ChartFrame({ title, description, data, config }: ChartProps) {
 
             {/* Fullscreen Button */}
             <Button onClick={ToggleFullScreen} className="flex items-center gap-1">
-              {isFullScreen ? <Sh
+              {isFullScreen ? <Shrink className="h-5 w-5" /> : <Expand className="h-5 w-5" />}
+            </Button>
+
+            {/* Reset Button */}
+            <Button onClick={resetChart} className="bg-red-500 text-white flex items-center gap-1">
+              <RotateCcw className="h-5 w-5" /> Reset
+            </Button>
+          </div>
+        </div>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+
+      {/* Toggle Horizontal/Vertical */}
+      <Button 
+        onClick={() => setIsVertical((prev) => !prev)}
+        className="mb-4 transition-all duration-300 ease-in-out bg-gray-100 text-black"
+      >
+        <ArrowsUpDown className="h-5 w-5" /> Switch to {isVertical ? "Horizontal" : "Vertical"}
+      </Button>
+
+      {/* Chart Content */}
+      <CardContent>
+        <ChartContainer config={config}>
+          {isLineChart ? (
+            // Line Chart (Horizontal / Vertical)
+            <LineChart 
+              layout={isVertical ? "vertical" : "horizontal"} 
+              width={500} height={400} data={data}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              {isVertical ? (
+                <>
+                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <XAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              ) : (
+                <>
+                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <YAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              )}
+              <Tooltip content={<ChartTooltipContent hideLabel />} />
+              <Legend content={<ChartLegendContent />} />
+              <Line type="monotone" dataKey="desktop" stroke={config.desktop.color} strokeWidth={2} />
+              <Line type="monotone" dataKey="mobile" stroke={config.mobile.color} strokeWidth={2} />
+              <Brush
+                dataKey="month"
+                height={20}
+                stroke="gray"
+                startIndex={brushStartIndex}
+                endIndex={brushEndIndex}
+                onChange={(range) => {
+                  setBrushStartIndex(range.startIndex ?? 0);
+                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
+                }}
+              />
+            </LineChart>
+          ) : (
+            // Bar Chart (Vertical / Horizontal)
+            <BarChart
+              layout={isVertical ? "vertical" : "horizontal"}
+              width={500}
+              height={400}
+              data={data}
+            >
+              <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+              {isVertical ? (
+                <>
+                  <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <XAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              ) : (
+                <>
+                  <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
+                  <YAxis type="number" domain={[0, "dataMax"]} />
+                </>
+              )}
+              <Tooltip content={<ChartTooltipContent hideLabel />} />
+              <Legend content={<ChartLegendContent />} />
+              <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />
+              <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />
+              <Brush
+                dataKey="month"
+                height={20}
+                stroke="gray"
+                startIndex={brushStartIndex}
+                endIndex={brushEndIndex}
+                onChange={(range) => {
+                  setBrushStartIndex(range.startIndex ?? 0);
+                  setBrushEndIndex(range.endIndex ?? (data.length - 1));
+                }}
+              />
+            </BarChart>
+          )}
+        </ChartContainer>
+      </CardContent>
+
+      {/* Footer */}
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 font-medium leading-none">
+          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Showing total visitors for the last 6 months
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
