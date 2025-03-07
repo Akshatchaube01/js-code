@@ -24,11 +24,17 @@ import {
 
 export const description = "A stacked bar chart with a legend";
 
+interface ChartData {
+  month: string;
+  desktop: number;
+  mobile: number;
+}
+
 interface BarChartProps {
   title: string;
   description: string;
   config: ChartConfig;
-  data: { month: string; desktop: number; mobile: number }[];
+  data: ChartData[];
 }
 
 export function BarChartFrame({ title, description, data, config }: BarChartProps) {
@@ -61,11 +67,11 @@ export function BarChartFrame({ title, description, data, config }: BarChartProp
   };
 
   // Toggle visibility of a dataset when clicking the legend
-  const handleLegendClick = (payload: any) => {
-    if (payload && payload.dataKey) {
+  const handleLegendClick = (payload: { dataKey?: string }) => {
+    if (payload?.dataKey && (payload.dataKey === "desktop" || payload.dataKey === "mobile")) {
       setVisibleSeries((prev) => ({
         ...prev,
-        [payload.dataKey]: !prev[payload.dataKey],
+        [payload.dataKey]: !prev[payload.dataKey], // Toggle visibility
       }));
     }
   };
@@ -100,35 +106,19 @@ export function BarChartFrame({ title, description, data, config }: BarChartProp
       <CardContent>
         <ChartContainer config={config}>
           {chartType === "bar" ? (
-            isVertical ? (
-              <BarChart key="vertical" layout="vertical" width={500} height={400} data={data}>
-                <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                <XAxis type="number" domain={[0, "dataMax"]} />
-                <Tooltip content={<ChartTooltipContent hideLabel />} />
-                <Legend onClick={handleLegendClick} content={<ChartLegendContent />} />
-                {visibleSeries.desktop && <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[8, 4, 4, 0]} barSize={30} />}
-                {visibleSeries.mobile && <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[0, 4, 4, 8]} barSize={30} />}
-                <Brush dataKey="month" height={20} stroke="gray" startIndex={brushStartIndex} endIndex={brushEndIndex} onChange={(range) => {
-                  setBrushStartIndex(range.startIndex ?? 0);
-                  setBrushEndIndex(range.endIndex ?? data.length - 1);
-                }} />
-              </BarChart>
-            ) : (
-              <BarChart key="horizontal" layout="horizontal" width={500} height={400} data={data}>
-                <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />
-                <YAxis type="number" domain={[0, "dataMax"]} />
-                <Tooltip content={<ChartTooltipContent hideLabel />} />
-                <Legend onClick={handleLegendClick} content={<ChartLegendContent />} />
-                {visibleSeries.desktop && <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[4, 4, 0, 0]} barSize={30} />}
-                {visibleSeries.mobile && <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[4, 4, 0, 0]} barSize={30} />}
-                <Brush dataKey="month" height={20} stroke="gray" startIndex={brushStartIndex} endIndex={brushEndIndex} onChange={(range) => {
-                  setBrushStartIndex(range.startIndex ?? 0);
-                  setBrushEndIndex(range.endIndex ?? data.length - 1);
-                }} />
-              </BarChart>
-            )
+            <BarChart key={isVertical ? "vertical-bar" : "horizontal-bar"} layout={isVertical ? "vertical" : "horizontal"} width={500} height={400} data={data}>
+              <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+              {isVertical ? <YAxis dataKey="month" type="category" tick={{ fontSize: 12 }} /> : <XAxis dataKey="month" type="category" tick={{ fontSize: 12 }} />}
+              {isVertical ? <XAxis type="number" domain={[0, "dataMax"]} /> : <YAxis type="number" domain={[0, "dataMax"]} />}
+              <Tooltip content={<ChartTooltipContent hideLabel />} />
+              <Legend onClick={handleLegendClick} content={<ChartLegendContent />} />
+              {visibleSeries.desktop && <Bar dataKey="desktop" stackId="a" fill={config.desktop.color} radius={[8, 4, 4, 0]} barSize={30} />}
+              {visibleSeries.mobile && <Bar dataKey="mobile" stackId="a" fill={config.mobile.color} radius={[0, 4, 4, 8]} barSize={30} />}
+              <Brush dataKey="month" height={20} stroke="gray" startIndex={brushStartIndex} endIndex={brushEndIndex} onChange={(range) => {
+                setBrushStartIndex(range.startIndex ?? 0);
+                setBrushEndIndex(range.endIndex ?? data.length - 1);
+              }} />
+            </BarChart>
           ) : (
             <LineChart key={isVertical ? "vertical-line" : "horizontal-line"} layout={isVertical ? "vertical" : "horizontal"} width={500} height={400} data={data}>
               <CartesianGrid horizontal={false} strokeDasharray="3 3" />
@@ -146,6 +136,15 @@ export function BarChartFrame({ title, description, data, config }: BarChartProp
           )}
         </ChartContainer>
       </CardContent>
+
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 font-medium leading-none">
+          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Showing total visitors for the last 6 months
+        </div>
+      </CardFooter>
     </Card>
   );
 }
